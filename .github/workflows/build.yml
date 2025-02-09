@@ -1,0 +1,29 @@
+name: Build Go binary for Raspberry Pi
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.6' 
+
+      - name: Build for Linux ARM64 (Raspberry Pi)
+        run: |
+          GOOS=linux GOARCH=arm64 go build -o eye main.go
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: eye
+          path: eye
+
