@@ -25,32 +25,36 @@ func main() {
 		return
 	}
 
-	fmt.Println("Distance Measurement In Progress")
+	fmt.Println("Continuous Distance Measurement Started...")
 
-	// Set up pins
+	// Set up trigger pin
 	trig.Out(gpio.Low)
-	time.Sleep(2 * time.Second)
+	time.Sleep(2 * time.Second) // Allow sensor to settle
 
-	// Send trigger pulse
-	trig.Out(gpio.High)
-	time.Sleep(10 * time.Microsecond)
-	trig.Out(gpio.Low)
+	for {
+		// Send trigger pulse
+		trig.Out(gpio.High)
+		time.Sleep(10 * time.Microsecond)
+		trig.Out(gpio.Low)
 
-	// Wait for echo to start
-	start := time.Now()
-	for echo.Read() == gpio.Low {
-		start = time.Now()
+		// Wait for echo to start
+		start := time.Now()
+		for echo.Read() == gpio.Low {
+			start = time.Now()
+		}
+
+		// Wait for echo to end
+		end := time.Now()
+		for echo.Read() == gpio.High {
+			end = time.Now()
+		}
+
+		// Calculate duration and distance
+		duration := end.Sub(start).Seconds()
+		distance := duration * 17150 // Speed of sound in air (343m/s)
+
+		fmt.Printf("Distance: %.2f cm\n", distance)
+
+		time.Sleep(1 * time.Second) // Wait before next measurement
 	}
-
-	// Wait for echo to end
-	end := time.Now()
-	for echo.Read() == gpio.High {
-		end = time.Now()
-	}
-
-	// Calculate duration and distance
-	duration := end.Sub(start).Seconds()
-	distance := duration * 17150 // Speed of sound in air (343m/s)
-
-	fmt.Printf("Distance: %.2f cm\n", distance)
 }
